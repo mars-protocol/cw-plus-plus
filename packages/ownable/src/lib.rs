@@ -5,10 +5,9 @@ use std::fmt::Display;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Api, Attribute, BlockInfo, DepsMut, StdError, StdResult, Storage};
 use cw_address_like::AddressLike;
-use cw_storage_plus::Item;
-
 // re-export the proc macros and the Expiration class
 pub use cw_ownable_derive::{cw_ownable_execute, cw_ownable_query};
+use cw_storage_plus::Item;
 pub use cw_utils::Expiration;
 
 /// The contract's ownership info
@@ -296,11 +295,7 @@ mod tests {
     use super::*;
 
     fn mock_addresses() -> [Addr; 3] {
-        [
-            Addr::unchecked("larry"),
-            Addr::unchecked("jake"),
-            Addr::unchecked("pumpkin"),
-        ]
+        [Addr::unchecked("larry"), Addr::unchecked("jake"), Addr::unchecked("pumpkin")]
     }
 
     fn mock_block_at_height(height: u64) -> BlockInfo {
