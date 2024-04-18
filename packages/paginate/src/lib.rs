@@ -106,8 +106,6 @@ where
 }
 
 /// Iterate entries in a `cw_storage_plus::Map` and returns PaginatedResponse.
-///
-/// TODO: add docs
 pub fn paginate_map_query<'a, K, T, R, E, F>(
     map: &Map<'a, K, T>,
     store: &dyn Storage,
@@ -140,8 +138,6 @@ where
 }
 
 /// Iterate entries in a `cw_storage_plus::Map` under a given prefix and returns PaginatedResponse.
-///
-/// TODO: add docs
 pub fn paginate_prefix_query<'a, K, T, R, E, F>(
     map: &Map<'a, K, T>,
     store: &dyn Storage,
