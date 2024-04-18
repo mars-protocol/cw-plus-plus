@@ -1,6 +1,6 @@
 use cosmwasm_std::{testing::mock_dependencies, StdError, Uint128};
-use cw_storage_plus::{Bound, Map};
 use cw_paginate::paginate_prefix_query;
+use cw_storage_plus::{Bound, Map};
 
 #[test]
 pub fn empty_when_prefix_not_found() {
