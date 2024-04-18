@@ -1,10 +1,18 @@
-mod types;
-
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Order, StdError, StdResult, Storage};
 use cw_storage_plus::{Bound, IndexList, IndexedMap, KeyDeserialize, Map, PrimaryKey};
 use serde::{de::DeserializeOwned, ser::Serialize};
 
-use crate::types::{Metadata, PaginationResponse};
+#[cw_serde]
+pub struct PaginationResponse<T> {
+    pub data: Vec<T>,
+    pub metadata: Metadata,
+}
+
+#[cw_serde]
+pub struct Metadata {
+    pub has_more: bool,
+}
 
 pub const DEFAULT_LIMIT: u32 = 10;
 pub const MAX_LIMIT: u32 = 30;
