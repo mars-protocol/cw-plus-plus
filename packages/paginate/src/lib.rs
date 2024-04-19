@@ -1,6 +1,18 @@
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Order, StdError, StdResult, Storage};
 use cw_storage_plus::{Bound, IndexList, IndexedMap, KeyDeserialize, Map, PrimaryKey};
 use serde::{de::DeserializeOwned, ser::Serialize};
+
+#[cw_serde]
+pub struct PaginationResponse<T> {
+    pub data: Vec<T>,
+    pub metadata: Metadata,
+}
+
+#[cw_serde]
+pub struct Metadata {
+    pub has_more: bool,
+}
 
 pub const DEFAULT_LIMIT: u32 = 10;
 pub const MAX_LIMIT: u32 = 30;
@@ -91,6 +103,72 @@ where
 {
     let iter = map.range(store, start, None, Order::Ascending);
     collect(iter, limit, parse_fn)
+}
+
+/// Iterate entries in a `cw_storage_plus::Map` and returns PaginatedResponse.
+pub fn paginate_map_query<'a, K, T, R, E, F>(
+    map: &Map<'a, K, T>,
+    store: &dyn Storage,
+    start: Option<Bound<'a, K>>,
+    limit: Option<u32>,
+    map_fn: F,
+) -> Result<PaginationResponse<R>, E>
+where
+    K: PrimaryKey<'a> + KeyDeserialize,
+    K::Output: 'static,
+    T: Serialize + DeserializeOwned,
+    F: Fn(K::Output, T) -> Result<R, E>,
+    E: From<StdError>,
+{
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+    let limit_plus_one = Some((limit + 1) as u32);
+    let mut data = paginate_map(map, store, start, limit_plus_one, map_fn)?;
+
+    let has_more = data.len() > limit;
+    if has_more {
+        data.pop();
+    }
+
+    Ok(PaginationResponse {
+        data,
+        metadata: Metadata {
+            has_more,
+        },
+    })
+}
+
+/// Iterate entries in a `cw_storage_plus::Map` under a given prefix and returns PaginatedResponse.
+pub fn paginate_prefix_query<'a, K, T, R, E, F>(
+    map: &Map<'a, K, T>,
+    store: &dyn Storage,
+    prefix: K::Prefix,
+    start: Option<Bound<'a, K::Suffix>>,
+    limit: Option<u32>,
+    map_fn: F,
+) -> Result<PaginationResponse<R>, E>
+where
+    K: PrimaryKey<'a>,
+    K::Suffix: PrimaryKey<'a> + KeyDeserialize,
+    <K::Suffix as KeyDeserialize>::Output: 'static,
+    T: Serialize + DeserializeOwned,
+    F: Fn(<K::Suffix as KeyDeserialize>::Output, T) -> Result<R, E>,
+    E: From<StdError>,
+{
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+    let limit_plus_one = Some((limit + 1) as u32);
+    let mut data = paginate_map_prefix(map, store, prefix, start, limit_plus_one, map_fn)?;
+
+    let has_more = data.len() > limit;
+    if has_more {
+        data.pop();
+    }
+
+    Ok(PaginationResponse {
+        data,
+        metadata: Metadata {
+            has_more,
+        },
+    })
 }
 
 // TODO: add unit tests
