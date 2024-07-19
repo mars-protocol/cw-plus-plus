@@ -43,7 +43,7 @@ where
 ///
 /// TODO: add docs
 pub fn paginate_map<'a, K, T, R, E, F>(
-    map: &Map<'a, K, T>,
+    map: &Map<K, T>,
     store: &dyn Storage,
     start: Option<Bound<'a, K>>,
     limit: Option<u32>,
@@ -64,7 +64,7 @@ where
 ///
 /// TODO: add docs
 pub fn paginate_map_prefix<'a, K, T, R, E, F>(
-    map: &Map<'a, K, T>,
+    map: &Map<K, T>,
     store: &dyn Storage,
     prefix: K::Prefix,
     start: Option<Bound<'a, K::Suffix>>,
@@ -87,7 +87,7 @@ where
 ///
 /// TODO: add docs
 pub fn paginate_indexed_map<'a, K, T, I, R, E, F>(
-    map: &IndexedMap<'a, K, T, I>,
+    map: &IndexedMap<K, T, I>,
     store: &dyn Storage,
     start: Option<Bound<'a, K>>,
     limit: Option<u32>,

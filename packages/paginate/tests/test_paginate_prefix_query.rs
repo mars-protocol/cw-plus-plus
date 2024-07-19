@@ -13,15 +13,11 @@ fn empty_when_prefix_not_found() {
     map.save(&mut deps.storage, ("prefix_2", "key_1"), &Uint128::new(3)).unwrap();
     map.save(&mut deps.storage, ("prefix_3", "key_1"), &Uint128::new(4)).unwrap();
 
-    let res = paginate_prefix_query(
-        &map,
-        &deps.storage,
-        "prefix_x",
-        None,
-        Some(3),
-        |_key, amount| Ok::<Uint128, StdError>(amount),
-    )
-    .unwrap();
+    let res =
+        paginate_prefix_query(&map, &deps.storage, "prefix_x", None, Some(3), |_key, amount| {
+            Ok::<Uint128, StdError>(amount)
+        })
+        .unwrap();
 
     assert!(!res.metadata.has_more);
     assert_eq!(res.data.len(), 0);
@@ -38,15 +34,11 @@ fn has_more_false_when_all_prefixes_within_limit() {
     map.save(&mut deps.storage, ("prefix_2", "key_1"), &Uint128::new(3)).unwrap();
     map.save(&mut deps.storage, ("prefix_3", "key_1"), &Uint128::new(4)).unwrap();
 
-    let res = paginate_prefix_query(
-        &map,
-        &deps.storage,
-        "prefix_1",
-        None,
-        Some(3),
-        |_key, amount| Ok::<Uint128, StdError>(amount),
-    )
-    .unwrap();
+    let res =
+        paginate_prefix_query(&map, &deps.storage, "prefix_1", None, Some(3), |_key, amount| {
+            Ok::<Uint128, StdError>(amount)
+        })
+        .unwrap();
 
     assert_eq!(res.data.get(0).unwrap(), Uint128::new(1));
     assert_eq!(res.data.get(1).unwrap(), Uint128::new(2));
@@ -65,15 +57,11 @@ fn has_more_true_when_results_outside_limit() {
     map.save(&mut deps.storage, ("prefix_2", "key_1"), &Uint128::new(3)).unwrap();
     map.save(&mut deps.storage, ("prefix_3", "key_1"), &Uint128::new(4)).unwrap();
 
-    let res = paginate_prefix_query(
-        &map,
-        &deps.storage,
-        "prefix_1",
-        None,
-        Some(1),
-        |_key, amount| Ok::<Uint128, StdError>(amount),
-    )
-    .unwrap();
+    let res =
+        paginate_prefix_query(&map, &deps.storage, "prefix_1", None, Some(1), |_key, amount| {
+            Ok::<Uint128, StdError>(amount)
+        })
+        .unwrap();
 
     assert_eq!(res.data.get(0).unwrap(), Uint128::new(1));
     assert!(res.metadata.has_more);
