@@ -17,6 +17,27 @@ pub struct Metadata {
 pub const DEFAULT_LIMIT: u32 = 10;
 pub const MAX_LIMIT: u32 = 30;
 
+/// This represents the maximum limit for pagination, which is set to one less than `MAX_LIMIT`.
+/// The reason for this is to ensure we can check if there are more items available for pagination.
+///
+/// The `paginate_map_query` and `paginate_prefix_query` functions handle pagination like this:
+/// ```
+/// let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT - 1) as usize;
+/// let limit_plus_one = Some((limit + 1) as u32);
+/// ```
+///
+/// This means if the user sets the `limit` to `MAX_LIMIT`, the `min` function will reduce it to
+/// `MAX_LIMIT - 1`. However, the `limit_plus_one` variable will still be set to `MAX_LIMIT`.
+///
+/// When collecting the items, another `min` function is applied to ensure the total items returned
+/// do not exceed `MAX_LIMIT`.
+///
+/// If we didn't subtract 1 from `MAX_LIMIT` in the first step, we wouldn't be able to request
+/// `MAX_LIMIT + 1` items (using `limit_plus_one`), as the `min` function would cap the result
+/// at `MAX_LIMIT`. By subtracting 1 initially, we leave room to fetch one extra item for checking
+/// if more items are available.
+const MAX_LIMIT_MINUS_ONE: u32 = MAX_LIMIT - 1;
+
 /// Collect items in an iterator into a Vec.
 ///
 /// For each item, apply a mutation as defined by `parse_fn`. This is useful if
@@ -120,7 +141,7 @@ where
     F: Fn(K::Output, T) -> Result<R, E>,
     E: From<StdError>,
 {
-    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT_MINUS_ONE) as usize;
     let limit_plus_one = Some((limit + 1) as u32);
     let mut data = paginate_map(map, store, start, limit_plus_one, map_fn)?;
 
@@ -154,7 +175,7 @@ where
     F: Fn(<K::Suffix as KeyDeserialize>::Output, T) -> Result<R, E>,
     E: From<StdError>,
 {
-    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT_MINUS_ONE) as usize;
     let limit_plus_one = Some((limit + 1) as u32);
     let mut data = paginate_map_prefix(map, store, prefix, start, limit_plus_one, map_fn)?;
 
