@@ -88,16 +88,18 @@ pub fn paginate_map_sub_prefix<'a, K, T, R, E, F>(
     map: &Map<K, T>,
     store: &dyn Storage,
     sub_prefix: K::SubPrefix,
-    start: Option<Bound<'a, K::Suffix>>,
+    start: Option<Bound<'a, K::SuperSuffix>>,
     limit: Option<u32>,
     parse_fn: F,
 ) -> Result<Vec<R>, E>
 where
     K: PrimaryKey<'a>,
-    K::Suffix: PrimaryKey<'a> + KeyDeserialize,
-    <K::Suffix as KeyDeserialize>::Output: 'static,
+    K::SuperSuffix: PrimaryKey<'a> + KeyDeserialize,
+    <K::SuperSuffix as KeyDeserialize>::Output: 'static,
+    <K as PrimaryKey<'a>>::SuperSuffix: PrimaryKey<'a>,
+    <K as PrimaryKey<'a>>::SuperSuffix: Clone,
     T: Serialize + DeserializeOwned,
-    F: Fn(<K::Suffix as KeyDeserialize>::Output, T) -> Result<R, E>,
+    F: Fn(<K::SuperSuffix as KeyDeserialize>::Output, T) -> Result<R, E>,
     E: From<StdError>,
 {
     let iter = map.sub_prefix(sub_prefix).range(store, start, None, Order::Ascending);
@@ -197,16 +199,16 @@ pub fn paginate_sub_prefix_query<'a, K, T, R, E, F>(
     map: &Map<K, T>,
     store: &dyn Storage,
     sub_prefix: K::SubPrefix,
-    start: Option<Bound<'a, K::Suffix>>,
+    start: Option<Bound<'a, K::SuperSuffix>>,
     limit: Option<u32>,
     map_fn: F,
 ) -> Result<PaginationResponse<R>, E>
 where
     K: PrimaryKey<'a>,
-    K::Suffix: PrimaryKey<'a> + KeyDeserialize,
-    <K::Suffix as KeyDeserialize>::Output: 'static,
+    K::SuperSuffix: PrimaryKey<'a> + KeyDeserialize,
+    <K::SuperSuffix as KeyDeserialize>::Output: 'static,
     T: Serialize + DeserializeOwned,
-    F: Fn(<K::Suffix as KeyDeserialize>::Output, T) -> Result<R, E>,
+    F: Fn(<K::SuperSuffix as KeyDeserialize>::Output, T) -> Result<R, E>,
     E: From<StdError>,
 {
     let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
