@@ -84,8 +84,6 @@ where
 }
 
 /// Iterate entries in a `cw_storage_plus::Map` under a given sub_prefix.
-///
-/// TODO: add docs
 pub fn paginate_map_sub_prefix<'a, K, T, R, E, F>(
     map: &Map<K, T>,
     store: &dyn Storage,
